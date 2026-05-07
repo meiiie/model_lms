@@ -1,0 +1,46 @@
+# Blender backups
+*.blend1
+*.blend2
+*.blend@
+
+# Render frames (test sequence, 25-900MB)
+_shared/Master_Showcase/frames/
+
+# Test renders (intermediate iterations)
+_shared/Master_Showcase/test_*.png
+_shared/Master_Showcase/water_test_*.png
+_shared/Master_Showcase/water_v17_*.png
+_shared/Master_Showcase/v15_*.png
+_shared/Master_Showcase/v16_*.png
+_shared/Master_Showcase/v18_*.png
+_shared/Master_Showcase/v19_*.png
+_shared/Master_Showcase/check_*.png
+
+# Old Master Showcase iterations (keep v1.9 only)
+_shared/Master_Showcase/Master_Showcase_v1.0.blend
+_shared/Master_Showcase/Master_Showcase_v1.1.blend
+_shared/Master_Showcase/Master_Showcase_v1.2.blend
+_shared/Master_Showcase/Master_Showcase_v1.0.glb
+_shared/Master_Showcase/Master_Showcase_v1.2.glb
+_shared/Master_Showcase/Master_Showcase_v1.3_marketing.blend
+_shared/Master_Showcase/Master_Showcase_v1.4_marketing.blend
+_shared/Master_Showcase/Master_Showcase_v1.5_marketing.blend
+_shared/Master_Showcase/Master_Showcase_v1.6_marketing.blend
+_shared/Master_Showcase/Master_Showcase_v1.7_marketing.blend
+_shared/Master_Showcase/Master_Showcase_v1.8_marketing.blend
+
+# Archived old exports
+**/exports/_archive/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+*.swp
+
+# Python cache
+__pycache__/
+*.pyc
