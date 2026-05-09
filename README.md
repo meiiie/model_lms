@@ -1,12 +1,38 @@
 # 🚢 VR Maritime LMS - Model Library
 
-**Bộ sưu tập model 3D thiết bị hàng hải** dành cho khóa học VR tương tác trên nền Unity 2022.3 + XR Interaction Toolkit.
+**Bộ sưu tập model 3D thiết bị hàng hải** dành cho khóa học VR tương tác trên nền Unity 2022.3+/Unity 6 + XR Interaction Toolkit.
 
 ---
 
 ## 📋 Tổng quan dự án
 
 **Mục tiêu:** Tạo các thiết bị 3D chuyên nghiệp cho khóa LMS hàng hải, tương tác được trong môi trường VR (Quest, Vive, Pico).
+
+## 🔗 Vai trò trong hệ sinh thái VR Maritime LMS
+
+Repo này là **source asset library** cho dự án Unity runtime:
+
+- Unity runtime repo: <https://github.com/meiiie/VR_Maritime_LMS>
+- Repo này: nguồn model, file Blender, export FBX/GLB, preview render, tài liệu thiết kế.
+- Repo Unity: chỉ nên chứa asset runtime đã chọn lọc, prefab, material, script, scene và Unity `.meta`.
+
+Không nên sáp nhập toàn bộ repo này vào Unity project. Các file `.blend`, preview render, video marketing và archive làm Unity import chậm, làm repo game phình to, và khiến review gameplay lẫn review asset bị trộn vào nhau.
+
+### Quy tắc sync sang Unity
+
+1. Sửa hoặc tạo model trong repo này.
+2. Export bản runtime có version rõ ràng, ưu tiên `.fbx` cho Unity.
+3. Ghi lại nguồn, tác giả, license/provenance, scale, animation và ghi chú import trong README của model đó.
+4. Chỉ copy runtime asset đã duyệt sang:
+
+   ```text
+   VR_Maritime_LMS/Assets/Project/Maritime/Models/<Equipment>/
+   ```
+
+5. Mở Unity để tạo/cập nhật `.meta`, material, prefab và collider.
+6. Cập nhật notice/audit trong repo Unity trước khi merge.
+
+Xem quy trình runtime đầy đủ ở `VR_Maritime_LMS/Docs/assets/MODEL_LMS_SYNC.md`.
 
 ## 🎁 Add-ons used (commercial Blender addons)
 
@@ -476,7 +502,7 @@ LESSON 2: "Vận hành AIS - Scenario tránh va"
 ## 📞 Maintenance Notes
 
 **Project lead:** Maritime VR LMS Project
-**Last updated:** 2026-05-07
+**Last updated:** 2026-05-10
 **Tools used:**
 - Blender 5.1 (modeling, animation)
 - Unity 2022.3 LTS (target engine)
@@ -493,4 +519,18 @@ LESSON 2: "Vận hành AIS - Scenario tránh va"
 
 ## 📜 License & Credits
 
-Model được tạo cho mục đích giáo dục VR LMS hàng hải. Tham chiếu thiết kế từ thiết bị Raymarine AIS4000 thực tế (tham khảo, không phải sản phẩm chính thức của Raymarine).
+Model được tạo cho mục đích giáo dục VR LMS hàng hải. Tham chiếu thiết kế từ thiết bị hàng hải thực tế chỉ dùng để định hướng hình dáng/chức năng; đây không phải sản phẩm chính thức hay bản sao được chứng nhận bởi các hãng thiết bị.
+
+### Current license status
+
+This repository is public for project collaboration, but it is **not yet a general-purpose redistributable asset pack**. Treat the assets as project source material for `VR_Maritime_LMS` until the license/provenance audit is complete.
+
+Before using any asset outside the VR Maritime LMS project, confirm:
+
+- original author/source,
+- generated-asset notes if an AI or procedural tool was used,
+- trademark-sensitive references,
+- whether modification and redistribution are allowed,
+- which exported runtime files are approved for Unity.
+
+Recommended next step: add an explicit repository license after the asset audit is complete. Until then, do not assume MIT/CC0/public-domain rights for the models.
