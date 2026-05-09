@@ -28,6 +28,22 @@ Example:
   -- "E:\Sach\Sua\test\VR\model_lms"
 ```
 
+Modern bridge cockpit:
+
+```powershell
+& "C:\Program Files\Blender Foundation\Blender 5.1\blender.exe" `
+  --background `
+  --python tools/blender_agent/create_modern_bridge_cockpit.py `
+  -- "E:\Sach\Sua\test\VR\model_lms"
+```
+
+## Generators
+
+| Script | Output folder | Runtime intent |
+|---|---|---|
+| `create_bridge_alarm_panel.py` | `11_Bridge_Alarm_Panel/` | Compact safety-control prop |
+| `create_modern_bridge_cockpit.py` | `12_Modern_Bridge_Cockpit/` | Bridge layout/detail candidate with telegraph, helm, console, anchors, and collision proxies |
+
 ## Standards
 
 - Author source geometry at real-world scale.

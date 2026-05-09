@@ -73,6 +73,7 @@ Khi kế thừa dự án, **install lại các add-ons này** trong Blender Pref
 | 09 | **Marine Radar (X-band)** 📡 | ✅ v1.0 | ~700 | 9 | [`09_Marine_Radar/`](./09_Marine_Radar/) |
 | 10 | **Ship Hull (Handysize Bulk Carrier)** 🚢 | ✅ **v3.3 ⭐⭐⭐⭐ + 6DOF rocking** | ~4,500 | **27** | [`10_Ship_Hull/`](./10_Ship_Hull/) |
 | 11 | **Bridge Alarm / Acknowledge Panel** 🚨 | ✅ v1.0 CODEx/Blender generated | ~runtime-light | 0 | [`11_Bridge_Alarm_Panel/`](./11_Bridge_Alarm_Panel/) |
+| 12 | **Modern Bridge Cockpit** | ✅ v1.0 CODEx/Blender generated | 29,431 | 0 | [`12_Modern_Bridge_Cockpit/`](./12_Modern_Bridge_Cockpit/) |
 
 > ⭐ = Updated v1.1 với external add-ons (CloudScapes / Better Lighting / Shaders Plus)
 > 🚢 = Container scene / vessel exterior
@@ -96,7 +97,8 @@ Tất cả models đã pass audit:
 | Marine Radar | ✅ | ~700 | 5 | 9 |
 | Ship Hull v3.2 (Handysize Pro) | ✅ ⭐⭐⭐ | ~4,500 | 30+ | **26** |
 | Bridge Alarm Panel | ✅ | runtime-light | 8 | 0 |
-| **TOTAL LIBRARY** | **11 models** | **~25,800+** | **90** | **131** |
+| Modern Bridge Cockpit | ✅ v1.0 generated candidate | 29,431 | 24 | 0 |
+| **TOTAL LIBRARY** | **12 models** | **~55,200+** | **114** | **131** |
 
 ### 🏆 Final Library Achievements
 
@@ -113,13 +115,13 @@ Tất cả models đã pass audit:
 - CloudScapes Free (Asset library, evaluated but not used at runtime)
 
 ✅ **Documentation Suite:**
-- 10 model READMEs (chi tiết đầy đủ)
+- 12 model READMEs (chi tiết đầy đủ)
 - Master README (this file)
 - Unity Integration Pack (8 ready-to-use C# scripts)
 
 ✅ **Format Coverage:**
-- 18 GLB exports (modern, web-ready, requires `com.unity.cloud.gltfast` package in Unity)
-- 12 FBX exports (Unity native, plug-and-play, no extra package needed)
+- 19 GLB exports (modern, web-ready, requires `com.unity.cloud.gltfast` package in Unity)
+- 13 FBX exports (Unity native, plug-and-play, no extra package needed)
 - 50+ render previews (4 angles per model average)
 
 | Model | FBX | GLB | Status |
@@ -135,6 +137,7 @@ Tất cả models đã pass audit:
 | 09 Radar | ✅ | ✅ | Both formats |
 | 10 Ship Hull v3.3 | ✅ **2.83 MB** | ✅ 444 KB | Both formats with 6DOF rocking |
 | 11 Bridge Alarm Panel | ✅ | ✅ | Generated with Blender Agent pipeline |
+| 12 Modern Bridge Cockpit | ✅ **2.31 MB** | ✅ **2.72 MB** | Generated layout/detail candidate with anchors and collision proxies |
 | Master Showcase v1.2 | ❌ | ✅ 2.5 MB | GLB only (FBX export too heavy: 132 actions × 401 obj) |
 
 ## 🎬 Master Showcase Scene v1.2 (with 6DOF rocking!)
