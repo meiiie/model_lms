@@ -72,6 +72,7 @@ Khi kế thừa dự án, **install lại các add-ons này** trong Blender Pref
 | 08 | **ECDIS Display** 🗺️ | ✅ v1.0 NEW | ~450 | 9 | [`08_ECDIS/`](./08_ECDIS/) |
 | 09 | **Marine Radar (X-band)** 📡 | ✅ v1.0 | ~700 | 9 | [`09_Marine_Radar/`](./09_Marine_Radar/) |
 | 10 | **Ship Hull (Handysize Bulk Carrier)** 🚢 | ✅ **v3.3 ⭐⭐⭐⭐ + 6DOF rocking** | ~4,500 | **27** | [`10_Ship_Hull/`](./10_Ship_Hull/) |
+| 11 | **Bridge Alarm / Acknowledge Panel** 🚨 | ✅ v1.0 CODEx/Blender generated | ~runtime-light | 0 | [`11_Bridge_Alarm_Panel/`](./11_Bridge_Alarm_Panel/) |
 
 > ⭐ = Updated v1.1 với external add-ons (CloudScapes / Better Lighting / Shaders Plus)
 > 🚢 = Container scene / vessel exterior
@@ -94,7 +95,8 @@ Tất cả models đã pass audit:
 | ECDIS Display | ✅ | ~450 | 5 | 9 |
 | Marine Radar | ✅ | ~700 | 5 | 9 |
 | Ship Hull v3.2 (Handysize Pro) | ✅ ⭐⭐⭐ | ~4,500 | 30+ | **26** |
-| **TOTAL LIBRARY** | **10 models** | **~25,800** | **82** | **131** |
+| Bridge Alarm Panel | ✅ | runtime-light | 8 | 0 |
+| **TOTAL LIBRARY** | **11 models** | **~25,800+** | **90** | **131** |
 
 ### 🏆 Final Library Achievements
 
@@ -116,8 +118,8 @@ Tất cả models đã pass audit:
 - Unity Integration Pack (8 ready-to-use C# scripts)
 
 ✅ **Format Coverage:**
-- 17 GLB exports (modern, web-ready, requires `com.unity.cloud.gltfast` package in Unity)
-- 11 FBX exports (Unity native, plug-and-play, no extra package needed)
+- 18 GLB exports (modern, web-ready, requires `com.unity.cloud.gltfast` package in Unity)
+- 12 FBX exports (Unity native, plug-and-play, no extra package needed)
 - 50+ render previews (4 angles per model average)
 
 | Model | FBX | GLB | Status |
@@ -132,6 +134,7 @@ Tất cả models đã pass audit:
 | 08 ECDIS | ✅ | ✅ | Both formats |
 | 09 Radar | ✅ | ✅ | Both formats |
 | 10 Ship Hull v3.3 | ✅ **2.83 MB** | ✅ 444 KB | Both formats with 6DOF rocking |
+| 11 Bridge Alarm Panel | ✅ | ✅ | Generated with Blender Agent pipeline |
 | Master Showcase v1.2 | ❌ | ✅ 2.5 MB | GLB only (FBX export too heavy: 132 actions × 401 obj) |
 
 ## 🎬 Master Showcase Scene v1.2 (with 6DOF rocking!)
