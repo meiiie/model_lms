@@ -37,12 +37,26 @@ Modern bridge cockpit:
   -- "E:\Sach\Sua\test\VR\model_lms"
 ```
 
+Depth-relief cockpit:
+
+```powershell
+python tools/depth_pipeline/generate_depth_assets.py `
+  12_Modern_Bridge_Cockpit/reference/imagegen_bridge_cockpit_reference_v1.png `
+  13_Modern_Bridge_Depth_Relief/textures
+
+& "C:\Program Files\Blender Foundation\Blender 5.1\blender.exe" `
+  --background `
+  --python tools/blender_agent/create_modern_bridge_depth_relief.py `
+  -- "E:\Sach\Sua\test\VR\model_lms"
+```
+
 ## Generators
 
 | Script | Output folder | Runtime intent |
 |---|---|---|
 | `create_bridge_alarm_panel.py` | `11_Bridge_Alarm_Panel/` | Compact safety-control prop |
 | `create_modern_bridge_cockpit.py` | `12_Modern_Bridge_Cockpit/` | Bridge layout/detail candidate with telegraph, helm, console, anchors, and collision proxies |
+| `create_modern_bridge_depth_relief.py` | `13_Modern_Bridge_Depth_Relief/` | Image-to-depth hybrid with visual relief plus physical control proxies |
 
 ## Standards
 
