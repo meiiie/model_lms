@@ -1,8 +1,17 @@
-# Cabin Lái Tàu VR — Bridge Cabin Complete v1.0
+# Cabin Lái Tàu VR — Bridge Cabin Complete v1.1
 
-**Codename:** `bridge-cabin-v1.0`
+**Codename:** `bridge-cabin-v1.1`
 **Release date:** 2026-05-11
 **Asset family:** `13_Bridge_VR_HardSurface/`
+
+## What's new in v1.1
+- **🌊 Ocean visible through windows** via Blender Ocean Modifier (real wave geometry + foam) at z=-3.5 m
+- **World shader splits hemispheres**: HDRI puresky for upward camera rays, deep navy ocean blue for downward rays — gives clean horizon line through windows
+- New main file: `source/bridge_v6.0_real_waves.blend`
+- New animation: `research/anim_v6.0_real_waves.mp4` (8 sec, 1280x720, 1.6 MB)
+- 4 new keyframe previews: `research/anim_v6.0_keyframe_f{001,080,160,240}.png`
+
+---
 
 ---
 
