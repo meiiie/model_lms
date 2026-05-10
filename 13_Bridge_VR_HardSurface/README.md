@@ -1,4 +1,11 @@
-# 13 - Bridge VR Hard-Surface
+# 13 — Cabin Lái Tàu VR (Bridge Cabin Complete) v1.0
+
+> **Codename:** `bridge-cabin-v1.0` · **Release:** 2026-05-11
+> **What:** Buồng lái tàu Handysize Bulk Carrier hoàn chỉnh cho VR LMS — toàn bộ không gian + thiết bị + animations + materials.
+> **For:** Container chính của khóa học VR hàng hải (VIMARU). Học viên Quest 3 spawn vào đây, vận hành ship wheel + EOT + compass + đọc ECDIS/radar.
+> **See:** [`RELEASE_NOTES.md`](RELEASE_NOTES.md) cho full description, use cases, file map, license.
+
+---
 
 VR maritime bridge cockpit asset family. Built using two parallel approaches in one session:
 
