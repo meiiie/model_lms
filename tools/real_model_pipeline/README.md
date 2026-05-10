@@ -11,8 +11,12 @@ concepts toward production VR assets. The rule is simple:
 
 | Candidate | Folder | What it is good for | Current limitation |
 |---|---|---|---|
-| Procedural cockpit | `12_Modern_Bridge_Cockpit` | Real modular geometry, clear anchors, easy Unity colliders | Still too stylized/blockout-like |
-| Depth relief cockpit | `13_Modern_Bridge_Depth_Relief` | Much richer visual read from one image | Mostly image relief; not enough true 3D controls |
+| Procedural cockpit | `12_Modern_Bridge_Cockpit` | Real modular geometry, clear anchors, easy Unity colliders, generated texture atlases for displays and surfaces | Needs more object-specific modeling passes |
+
+Rejected experiment:
+- `13_Modern_Bridge_Depth_Relief` was removed from the active library. It looked
+  richer as a still image, but it was mostly image relief and did not provide
+  trustworthy VR interaction geometry.
 
 ## Technique Ranking
 
@@ -52,7 +56,7 @@ Do not treat the output as final. Expect cleanup:
 - Re-scale to metric units.
 - Split interactive parts into separate transforms.
 
-### 3. Image-to-depth / relief
+### 3. Image-to-texture / subtle relief
 
 Best for distant or mid-range detail when the camera mostly sees the surface
 from one direction.
@@ -99,9 +103,10 @@ Use it for:
    - `Helm`: wheel, column, rotation pivot.
    - `Displays`: screens as separate material slots for Unity UI/video.
 
-4. Apply depth relief only to non-interactive surfaces.
-   - Bake or export albedo/normal/roughness.
-   - Keep displacement subtle so window frames and console edges do not warp.
+4. Apply generated images only where they behave like real materials.
+   - Display screens can use emissive radar/ECDIS/engine UI textures.
+   - Carpet, ceiling, black metal, and wood can use subtle texture atlases.
+   - Avoid full-room depth projection as a production asset.
 
 5. Prepare VR interaction geometry.
    - Add simple convex colliders per part in Unity.
@@ -133,15 +138,15 @@ For each production asset:
 
 The current best next step is not another full-room one-shot generation. It is:
 
-1. Keep `13_Modern_Bridge_Depth_Relief` as visual reference only.
-2. Rebuild the bridge as modular real geometry using the stronger existing
+1. Keep `12_Modern_Bridge_Cockpit` as the active production candidate.
+2. Rebuild or replace lesson-critical details with the stronger existing
    assets:
    - `02_Ship_Wheel`
    - `04_Engine_Telegraph`
    - `08_ECDIS`
    - `09_Marine_Radar`
-3. Replace the rough telegraph/helm proxies in the depth scene with those
-   production assets.
+3. Keep generated screen/surface textures where they improve visual fidelity
+   without faking interaction geometry.
 4. In Unity, expose only the real telegraph handle and helm as grabbable
    interactables.
 

@@ -1,25 +1,42 @@
 # Modern Bridge Cockpit
 
-Version: v1.0
+Version: v1.1
 Created: 2026-05-10
-Source: Generated procedurally with Codex + Blender Python from a project-local ImageGen reference.
+Source: Generated procedurally with Codex + Blender Python from project-local ImageGen references.
 
 ## Purpose
 
-High-context ship bridge cockpit blockout/detail asset for the VR Maritime LMS.
-This is intended as a professional layout reference and Unity import candidate,
-not yet the final AAA-quality art pass.
+High-context ship bridge cockpit asset for the VR Maritime LMS. This version
+keeps the cockpit as real procedural geometry and uses generated raster textures
+only where images are appropriate: displays, carpet, ceiling panels, black
+metal console surfaces, and wood cabinets.
+
+`13_Modern_Bridge_Depth_Relief` was removed from the active pipeline because it
+looked richer in a still render but did not provide trustworthy VR geometry.
 
 ## Runtime Exports
 
-- `exports/ModernBridgeCockpit_VR_v1.0.fbx`
-- `exports/ModernBridgeCockpit_VR_v1.0.glb`
+- `exports/ModernBridgeCockpit_VR_v1.1.fbx`
+- `exports/ModernBridgeCockpit_VR_v1.1.glb`
 
 ## Source
 
-- `source/ModernBridgeCockpit_VR_v1.0.blend`
+- `source/ModernBridgeCockpit_VR_v1.1.blend`
 - Generator script: `tools/blender_agent/create_modern_bridge_cockpit.py`
 - Concept reference: `reference/imagegen_bridge_cockpit_reference_v1.png`
+
+## Texture Atlases
+
+- `textures/source/screen_ui_atlas_v1.png`
+- `textures/source/surface_material_atlas_v1.png`
+- `textures/screens/screen_radar_v1.png`
+- `textures/screens/screen_ecdis_chart_v1.png`
+- `textures/screens/screen_engine_monitor_v1.png`
+- `textures/screens/screen_comms_status_v1.png`
+- `textures/surfaces/surface_carpet_navy_v1.png`
+- `textures/surfaces/surface_ceiling_panels_v1.png`
+- `textures/surfaces/surface_black_metal_v1.png`
+- `textures/surfaces/surface_warm_wood_v1.png`
 
 ## Scale And Orientation
 

@@ -7,7 +7,7 @@ from mathutils import Vector
 
 
 MODEL_DIR = "12_Modern_Bridge_Cockpit"
-MODEL_NAME = "ModernBridgeCockpit_VR_v1.0"
+MODEL_NAME = "ModernBridgeCockpit_VR_v1.1"
 
 
 def repo_root_from_args() -> Path:
@@ -47,6 +47,82 @@ def mat(name, color, metallic=0.0, roughness=0.55, emission=None, strength=0.0, 
         material.use_screen_refraction = True
         material.show_transparent_back = True
     return material
+
+
+def set_image_texture(material_name, image_path, emission_strength=0.0, roughness=None, metallic=None):
+    image_path = Path(image_path)
+    material = bpy.data.materials.get(material_name)
+    if not material or not image_path.exists():
+        return False
+
+    material.use_nodes = True
+    nodes = material.node_tree.nodes
+    links = material.node_tree.links
+    bsdf = nodes.get("Principled BSDF")
+    if not bsdf:
+        return False
+
+    image = bpy.data.images.load(str(image_path), check_existing=True)
+    tex = nodes.new(type="ShaderNodeTexImage")
+    tex.name = f"{material_name}_image"
+    tex.label = image_path.name
+    tex.image = image
+    tex.extension = "REPEAT"
+    try:
+        image.colorspace_settings.name = "sRGB"
+    except Exception:
+        pass
+
+    def clear_input_links(input_name):
+        if input_name in bsdf.inputs:
+            for link in list(bsdf.inputs[input_name].links):
+                links.remove(link)
+
+    clear_input_links("Base Color")
+    links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+
+    if emission_strength > 0.0:
+        if "Emission Color" in bsdf.inputs:
+            clear_input_links("Emission Color")
+            links.new(tex.outputs["Color"], bsdf.inputs["Emission Color"])
+        if "Emission Strength" in bsdf.inputs:
+            bsdf.inputs["Emission Strength"].default_value = emission_strength
+
+    if roughness is not None and "Roughness" in bsdf.inputs:
+        bsdf.inputs["Roughness"].default_value = roughness
+    if metallic is not None and "Metallic" in bsdf.inputs:
+        bsdf.inputs["Metallic"].default_value = metallic
+
+    material["texture_source"] = str(image_path.relative_to(image_path.parents[2])) if len(image_path.parents) > 2 else str(image_path)
+    return True
+
+
+def image_mat(name, image_path, fallback_color, metallic=0.0, roughness=0.34, emission_strength=0.0):
+    material = mat(
+        name,
+        fallback_color,
+        metallic=metallic,
+        roughness=roughness,
+        emission=fallback_color if emission_strength > 0 else None,
+        strength=emission_strength,
+    )
+    set_image_texture(name, image_path, emission_strength, roughness, metallic)
+    return material
+
+
+def install_texture_materials(texture_dir):
+    screen_dir = texture_dir / "screens"
+    surface_dir = texture_dir / "surfaces"
+
+    set_image_texture("mat_carpet_navy", surface_dir / "surface_carpet_navy_v1.png", roughness=0.94)
+    set_image_texture("mat_ceiling_dark", surface_dir / "surface_ceiling_panels_v1.png", roughness=0.68, metallic=0.08)
+    set_image_texture("mat_console_dark", surface_dir / "surface_black_metal_v1.png", roughness=0.36, metallic=0.42)
+    set_image_texture("mat_warm_wood", surface_dir / "surface_warm_wood_v1.png", roughness=0.38)
+
+    image_mat("mat_screen_radar", screen_dir / "screen_radar_v1.png", (0.02, 0.20, 0.14, 1), 0.0, 0.16, 1.25)
+    image_mat("mat_screen_chart", screen_dir / "screen_ecdis_chart_v1.png", (0.02, 0.28, 0.45, 1), 0.0, 0.18, 1.05)
+    image_mat("mat_screen_engine", screen_dir / "screen_engine_monitor_v1.png", (0.02, 0.16, 0.22, 1), 0.0, 0.18, 1.1)
+    image_mat("mat_screen_comms", screen_dir / "screen_comms_status_v1.png", (0.02, 0.16, 0.25, 1), 0.0, 0.18, 1.1)
 
 
 def empty(name, loc):
@@ -238,52 +314,62 @@ def add_monitor(parent, name, x, y, z, yaw, width=1.0, height=0.58, screen_type=
 
     rot = (math.radians(67), 0, yaw)
     body = bevel(cube(f"{name}_monitor_body", (x, y, z), (width + 0.14, 0.08, height + 0.14), dark, rot, parent), 0.025, 3)
-    screen = bevel(cube(f"{name}_screen_emissive", (x, y - 0.035, z + 0.01), (width, 0.022, height), glass, rot, parent), 0.01, 2)
+    screen_material_name = {
+        "radar": "mat_screen_radar",
+        "chart": "mat_screen_chart",
+        "engine": "mat_screen_engine",
+        "comms": "mat_screen_comms",
+        "nav": "mat_screen_engine",
+    }.get(screen_type, "mat_blue_screen")
+    screen_material = bpy.data.materials.get(screen_material_name, glass)
+    screen = bevel(cube(f"{name}_screen_emissive", (x, y - 0.090, z + 0.035), (width, 0.010, height), screen_material, rot, parent), 0.01, 2)
     screen["display_role"] = screen_type
+    screen["material_role"] = "generated_screen_texture"
 
-    # Screen UI is deliberately simple geometry so Unity can import it without texture baking.
-    ui_parent = empty(f"{name}_ui_root", (x, y - 0.072, z + 0.03))
-    ui_parent.rotation_euler = rot
-    ui_parent.parent = parent
+    if screen_material_name == "mat_blue_screen":
+        # Fallback geometry keeps the model usable if texture assets are absent.
+        ui_parent = empty(f"{name}_ui_root", (x, y - 0.072, z + 0.03))
+        ui_parent.rotation_euler = rot
+        ui_parent.parent = parent
 
-    if screen_type == "radar":
-        for r in (0.10, 0.18, 0.26):
-            ring = torus(f"{name}_radar_range_ring_{r:.2f}", (x, y - 0.079, z + 0.04), r, 0.003, green, rot, parent)
-            ring.scale.x = width / height
-        for angle in range(0, 180, 30):
-            marker = cube(
-                f"{name}_radar_bearing_mark_{angle}",
-                (x, y - 0.082, z + 0.04),
-                (0.006, 0.006, height * 0.90),
-                green,
-                (rot[0], 0, yaw + math.radians(angle)),
-                parent,
-            )
-            marker["screen_markup"] = True
-    elif screen_type == "chart":
-        colors = [cyan, green, amber]
-        for i in range(14):
-            px = x - width * 0.38 + (i % 7) * width * 0.13
-            pz = z - height * 0.26 + (i // 7) * height * 0.22
-            patch = bevel(cube(f"{name}_chart_patch_{i}", (px, y - 0.081, pz), (width * 0.09, 0.006, height * 0.07), colors[i % 3], rot, parent), 0.003, 1)
-            patch["screen_markup"] = True
-        for i in range(6):
-            line = cube(
-                f"{name}_route_line_{i}",
-                (x - width * 0.25 + i * width * 0.09, y - 0.083, z + height * 0.12 - i * height * 0.055),
-                (width * 0.20, 0.006, 0.006),
-                cyan,
-                (rot[0], 0, yaw - math.radians(14)),
-                parent,
-            )
-            line["screen_markup"] = True
-    else:
-        for i in range(9):
-            col = [green, amber, cyan][i % 3]
-            px = x - width * 0.35 + (i % 3) * width * 0.35
-            pz = z - height * 0.22 + (i // 3) * height * 0.22
-            widget = bevel(cube(f"{name}_nav_widget_{i}", (px, y - 0.081, pz), (width * 0.18, 0.006, height * 0.10), col, rot, parent), 0.004, 1)
-            widget["screen_markup"] = True
+        if screen_type == "radar":
+            for r in (0.10, 0.18, 0.26):
+                ring = torus(f"{name}_radar_range_ring_{r:.2f}", (x, y - 0.079, z + 0.04), r, 0.003, green, rot, parent)
+                ring.scale.x = width / height
+            for angle in range(0, 180, 30):
+                marker = cube(
+                    f"{name}_radar_bearing_mark_{angle}",
+                    (x, y - 0.082, z + 0.04),
+                    (0.006, 0.006, height * 0.90),
+                    green,
+                    (rot[0], 0, yaw + math.radians(angle)),
+                    parent,
+                )
+                marker["screen_markup"] = True
+        elif screen_type == "chart":
+            colors = [cyan, green, amber]
+            for i in range(14):
+                px = x - width * 0.38 + (i % 7) * width * 0.13
+                pz = z - height * 0.26 + (i // 7) * height * 0.22
+                patch = bevel(cube(f"{name}_chart_patch_{i}", (px, y - 0.081, pz), (width * 0.09, 0.006, height * 0.07), colors[i % 3], rot, parent), 0.003, 1)
+                patch["screen_markup"] = True
+            for i in range(6):
+                line = cube(
+                    f"{name}_route_line_{i}",
+                    (x - width * 0.25 + i * width * 0.09, y - 0.083, z + height * 0.12 - i * height * 0.055),
+                    (width * 0.20, 0.006, 0.006),
+                    cyan,
+                    (rot[0], 0, yaw - math.radians(14)),
+                    parent,
+                )
+                line["screen_markup"] = True
+        else:
+            for i in range(9):
+                col = [green, amber, cyan][i % 3]
+                px = x - width * 0.35 + (i % 3) * width * 0.35
+                pz = z - height * 0.22 + (i // 3) * height * 0.22
+                widget = bevel(cube(f"{name}_nav_widget_{i}", (px, y - 0.081, pz), (width * 0.18, 0.006, height * 0.10), col, rot, parent), 0.004, 1)
+                widget["screen_markup"] = True
 
     for i in range(4):
         cyl(
@@ -310,6 +396,38 @@ def add_button_row(parent, prefix, x0, y, z, count, spacing, material_names, rot
         button["vr_action"] = "press"
 
 
+def add_upright_display(parent, name, x, y, z, width, height, screen_type):
+    dark = bpy.data.materials["mat_console_dark"]
+    metal = bpy.data.materials["mat_brushed_metal"]
+    screen_material_name = {
+        "radar": "mat_screen_radar",
+        "chart": "mat_screen_chart",
+        "engine": "mat_screen_engine",
+        "comms": "mat_screen_comms",
+    }[screen_type]
+    screen_material = bpy.data.materials[screen_material_name]
+
+    body = bevel(cube(f"{name}_upright_display_body", (x, y, z), (width + 0.16, 0.10, height + 0.16), dark, parent=parent), 0.025, 3)
+    screen = bevel(cube(f"{name}_upright_display_screen", (x, y - 0.058, z), (width, 0.012, height), screen_material, parent=parent), 0.006, 1)
+    led_bar = bevel(cube(f"{name}_upright_display_status_bar", (x, y - 0.066, z - height * 0.58), (width * 0.86, 0.012, 0.022), metal, parent=parent), 0.004, 1)
+    body["runtime_role"] = "static_bridge_display"
+    screen["display_role"] = screen_type
+    screen["material_role"] = "generated_screen_texture"
+    led_bar["runtime_role"] = "static_bridge_display_detail"
+    return body, screen
+
+
+def add_upright_display_cluster(parent):
+    specs = [
+        ("left_radar", -3.75, "radar"),
+        ("left_chart", -2.45, "chart"),
+        ("right_engine", 2.45, "engine"),
+        ("right_comms", 3.75, "comms"),
+    ]
+    for name, x, screen_type in specs:
+        add_upright_display(parent, name, x, 0.43, 1.38, 1.02, 0.62, screen_type)
+
+
 def add_console_bank(parent):
     dark = bpy.data.materials["mat_console_dark"]
     metal = bpy.data.materials["mat_brushed_metal"]
@@ -327,7 +445,7 @@ def add_console_bank(parent):
         base["runtime_role"] = "static_bridge_console"
         rail["runtime_role"] = "static_bridge_console"
 
-        screen_type = ["radar", "chart", "nav"][i % 3]
+        screen_type = ["radar", "chart", "engine", "comms", "radar", "chart"][i]
         add_monitor(parent, f"monitor_{i:02}", x, 0.66, 1.23, yaw, 0.92, 0.54, screen_type)
         add_button_row(
             parent,
@@ -554,7 +672,8 @@ def create_model(root: Path):
     export_dir = out_dir / "exports"
     render_dir = out_dir / "renders"
     reference_dir = out_dir / "reference"
-    for directory in (source_dir, export_dir, render_dir, reference_dir):
+    texture_dir = out_dir / "textures"
+    for directory in (source_dir, export_dir, render_dir, reference_dir, texture_dir):
         directory.mkdir(parents=True, exist_ok=True)
 
     # PBR-ish materials. These are intentionally procedural and lightweight.
@@ -581,13 +700,15 @@ def create_model(root: Path):
     mat("mat_black_rubber", (0.004, 0.004, 0.003, 1), 0.0, 0.86)
     mat("mat_soft_light", (0.85, 0.92, 1.0, 1), 0.0, 0.2, (0.75, 0.88, 1.0, 1), 1.2)
     mat("mat_collision_proxy", (1.0, 0.12, 0.04, 0.25), 0.0, 1.0, alpha=0.18)
+    install_texture_materials(texture_dir)
 
     root_empty = empty("modern_bridge_cockpit_root", (0, 0, 0))
     root_empty["model_id"] = "modern_bridge_cockpit"
-    root_empty["version"] = "v1.0"
+    root_empty["version"] = "v1.1"
     root_empty["unit_scale"] = "meters"
     root_empty["runtime_target"] = "Unity 6 VR training scene"
     root_empty["reference_image"] = "reference/imagegen_bridge_cockpit_reference_v1.png"
+    root_empty["texture_strategy"] = "procedural geometry plus project-local ImageGen screen and surface atlases"
     root_empty["interactive_anchors"] = "telegraph, helm, screens"
 
     create_ocean_mesh(root_empty, bpy.data.materials["mat_ocean_teal"])
@@ -595,6 +716,7 @@ def create_model(root: Path):
     add_room_shell(root_empty)
     add_windows_and_ship(root_empty)
     add_console_bank(root_empty)
+    add_upright_display_cluster(root_empty)
     add_helm(root_empty)
     add_engine_telegraph(root_empty)
     scale_objects_around(
@@ -673,26 +795,43 @@ def create_model(root: Path):
     readme.write_text(
         """# Modern Bridge Cockpit
 
-Version: v1.0
+Version: v1.1
 Created: 2026-05-10
-Source: Generated procedurally with Codex + Blender Python from a project-local ImageGen reference.
+Source: Generated procedurally with Codex + Blender Python from project-local ImageGen references.
 
 ## Purpose
 
-High-context ship bridge cockpit blockout/detail asset for the VR Maritime LMS.
-This is intended as a professional layout reference and Unity import candidate,
-not yet the final AAA-quality art pass.
+High-context ship bridge cockpit asset for the VR Maritime LMS. This version
+keeps the cockpit as real procedural geometry and uses generated raster textures
+only where images are appropriate: displays, carpet, ceiling panels, black
+metal console surfaces, and wood cabinets.
+
+`13_Modern_Bridge_Depth_Relief` was removed from the active pipeline because it
+looked richer in a still render but did not provide trustworthy VR geometry.
 
 ## Runtime Exports
 
-- `exports/ModernBridgeCockpit_VR_v1.0.fbx`
-- `exports/ModernBridgeCockpit_VR_v1.0.glb`
+- `exports/ModernBridgeCockpit_VR_v1.1.fbx`
+- `exports/ModernBridgeCockpit_VR_v1.1.glb`
 
 ## Source
 
-- `source/ModernBridgeCockpit_VR_v1.0.blend`
+- `source/ModernBridgeCockpit_VR_v1.1.blend`
 - Generator script: `tools/blender_agent/create_modern_bridge_cockpit.py`
 - Concept reference: `reference/imagegen_bridge_cockpit_reference_v1.png`
+
+## Texture Atlases
+
+- `textures/source/screen_ui_atlas_v1.png`
+- `textures/source/surface_material_atlas_v1.png`
+- `textures/screens/screen_radar_v1.png`
+- `textures/screens/screen_ecdis_chart_v1.png`
+- `textures/screens/screen_engine_monitor_v1.png`
+- `textures/screens/screen_comms_status_v1.png`
+- `textures/surfaces/surface_carpet_navy_v1.png`
+- `textures/surfaces/surface_ceiling_panels_v1.png`
+- `textures/surfaces/surface_black_metal_v1.png`
+- `textures/surfaces/surface_warm_wood_v1.png`
 
 ## Scale And Orientation
 

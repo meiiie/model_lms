@@ -73,8 +73,7 @@ Khi kế thừa dự án, **install lại các add-ons này** trong Blender Pref
 | 09 | **Marine Radar (X-band)** 📡 | ✅ v1.0 | ~700 | 9 | [`09_Marine_Radar/`](./09_Marine_Radar/) |
 | 10 | **Ship Hull (Handysize Bulk Carrier)** 🚢 | ✅ **v3.3 ⭐⭐⭐⭐ + 6DOF rocking** | ~4,500 | **27** | [`10_Ship_Hull/`](./10_Ship_Hull/) |
 | 11 | **Bridge Alarm / Acknowledge Panel** 🚨 | ✅ v1.0 CODEx/Blender generated | ~runtime-light | 0 | [`11_Bridge_Alarm_Panel/`](./11_Bridge_Alarm_Panel/) |
-| 12 | **Modern Bridge Cockpit** | ✅ v1.0 CODEx/Blender generated | 29,431 | 0 | [`12_Modern_Bridge_Cockpit/`](./12_Modern_Bridge_Cockpit/) |
-| 13 | **Modern Bridge Depth Relief** | ✅ v1.0 image-to-depth hybrid | 25,071 | 0 | [`13_Modern_Bridge_Depth_Relief/`](./13_Modern_Bridge_Depth_Relief/) |
+| 12 | **Modern Bridge Cockpit** | ✅ v1.1 procedural + generated texture atlases | ~29,500 | 0 | [`12_Modern_Bridge_Cockpit/`](./12_Modern_Bridge_Cockpit/) |
 
 > ⭐ = Updated v1.1 với external add-ons (CloudScapes / Better Lighting / Shaders Plus)
 > 🚢 = Container scene / vessel exterior
@@ -98,9 +97,8 @@ Tất cả models đã pass audit:
 | Marine Radar | ✅ | ~700 | 5 | 9 |
 | Ship Hull v3.2 (Handysize Pro) | ✅ ⭐⭐⭐ | ~4,500 | 30+ | **26** |
 | Bridge Alarm Panel | ✅ | runtime-light | 8 | 0 |
-| Modern Bridge Cockpit | ✅ v1.0 generated candidate | 29,431 | 24 | 0 |
-| Modern Bridge Depth Relief | ✅ v1.0 image-to-depth hybrid | 25,071 | 8 | 0 |
-| **TOTAL LIBRARY** | **13 models** | **~80,300+** | **122** | **131** |
+| Modern Bridge Cockpit | ✅ v1.1 textured procedural candidate | ~29,500 | 28+ | 0 |
+| **TOTAL LIBRARY** | **12 active models** | **~55,300+** | **114+** | **131** |
 
 ### 🏆 Final Library Achievements
 
@@ -139,8 +137,7 @@ Tất cả models đã pass audit:
 | 09 Radar | ✅ | ✅ | Both formats |
 | 10 Ship Hull v3.3 | ✅ **2.83 MB** | ✅ 444 KB | Both formats with 6DOF rocking |
 | 11 Bridge Alarm Panel | ✅ | ✅ | Generated with Blender Agent pipeline |
-| 12 Modern Bridge Cockpit | ✅ **2.31 MB** | ✅ **2.72 MB** | Generated layout/detail candidate with anchors and collision proxies |
-| 13 Modern Bridge Depth Relief | ✅ **7.35 MB** | ✅ **7.24 MB** | Image-to-depth hybrid; visual relief plus physical control proxies |
+| 12 Modern Bridge Cockpit | ✅ **11.36 MB** | ✅ **11.80 MB** | Procedural geometry with generated screen/surface texture atlases, anchors, and collision proxies |
 | Master Showcase v1.2 | ❌ | ✅ 2.5 MB | GLB only (FBX export too heavy: 132 actions × 401 obj) |
 
 ## 🎬 Master Showcase Scene v1.2 (with 6DOF rocking!)
