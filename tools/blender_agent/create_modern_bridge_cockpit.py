@@ -7,7 +7,7 @@ from mathutils import Vector
 
 
 MODEL_DIR = "12_Modern_Bridge_Cockpit"
-MODEL_NAME = "ModernBridgeCockpit_VR_v1.1"
+MODEL_NAME = "ModernBridgeCockpit_VR_v1.2"
 
 
 def repo_root_from_args() -> Path:
@@ -113,16 +113,24 @@ def image_mat(name, image_path, fallback_color, metallic=0.0, roughness=0.34, em
 def install_texture_materials(texture_dir):
     screen_dir = texture_dir / "screens"
     surface_dir = texture_dir / "surfaces"
+    interactive_dir = texture_dir / "interactive"
+    structure_dir = texture_dir / "structure"
 
-    set_image_texture("mat_carpet_navy", surface_dir / "surface_carpet_navy_v1.png", roughness=0.94)
-    set_image_texture("mat_ceiling_dark", surface_dir / "surface_ceiling_panels_v1.png", roughness=0.68, metallic=0.08)
+    set_image_texture("mat_carpet_navy", structure_dir / "structure_nonslip_floor_v1.png", roughness=0.88)
+    set_image_texture("mat_ceiling_dark", structure_dir / "structure_ceiling_panels_v1.png", roughness=0.66, metallic=0.08)
     set_image_texture("mat_console_dark", surface_dir / "surface_black_metal_v1.png", roughness=0.36, metallic=0.42)
+    set_image_texture("mat_window_frame", structure_dir / "structure_dark_steel_pillar_v1.png", roughness=0.42, metallic=0.55)
+    set_image_texture("mat_brushed_metal", interactive_dir / "interactive_brushed_stainless_v1.png", roughness=0.23, metallic=0.85)
+    set_image_texture("mat_black_rubber", interactive_dir / "interactive_black_rubber_v1.png", roughness=0.90, metallic=0.0)
     set_image_texture("mat_warm_wood", surface_dir / "surface_warm_wood_v1.png", roughness=0.38)
 
     image_mat("mat_screen_radar", screen_dir / "screen_radar_v1.png", (0.02, 0.20, 0.14, 1), 0.0, 0.16, 1.25)
     image_mat("mat_screen_chart", screen_dir / "screen_ecdis_chart_v1.png", (0.02, 0.28, 0.45, 1), 0.0, 0.18, 1.05)
     image_mat("mat_screen_engine", screen_dir / "screen_engine_monitor_v1.png", (0.02, 0.16, 0.22, 1), 0.0, 0.18, 1.1)
     image_mat("mat_screen_comms", screen_dir / "screen_comms_status_v1.png", (0.02, 0.16, 0.25, 1), 0.0, 0.18, 1.1)
+    image_mat("mat_red_bakelite", interactive_dir / "interactive_red_bakelite_v1.png", (0.78, 0.02, 0.01, 1), 0.0, 0.22, 0.08)
+    image_mat("mat_telegraph_dial_face", interactive_dir / "interactive_telegraph_dial_v1.png", (0.01, 0.012, 0.012, 1), 0.0, 0.20, 0.16)
+    image_mat("mat_marine_rail_metal", structure_dir / "structure_brushed_rail_wiper_v1.png", (0.62, 0.64, 0.62, 1), 0.85, 0.24, 0.0)
 
 
 def empty(name, loc):
@@ -490,7 +498,7 @@ def add_console_bank(parent):
 def add_windows_and_ship(parent):
     frame = bpy.data.materials["mat_window_frame"]
     glass = bpy.data.materials["mat_window_glass"]
-    metal = bpy.data.materials["mat_brushed_metal"]
+    metal = bpy.data.materials["mat_marine_rail_metal"]
     dark = bpy.data.materials["mat_console_dark"]
     deck = bpy.data.materials["mat_ship_deck"]
 
@@ -567,8 +575,8 @@ def add_helm(parent):
 def add_engine_telegraph(parent):
     metal = bpy.data.materials["mat_brushed_metal"]
     dark = bpy.data.materials["mat_console_dark"]
-    black = bpy.data.materials["mat_black_glass"]
-    red = bpy.data.materials["mat_red_led"]
+    black = bpy.data.materials["mat_telegraph_dial_face"]
+    red = bpy.data.materials["mat_red_bakelite"]
     green = bpy.data.materials["mat_green_led"]
     amber = bpy.data.materials["mat_amber_led"]
     white = bpy.data.materials["mat_label_white"]
@@ -576,7 +584,8 @@ def add_engine_telegraph(parent):
     bevel(cube("telegraph_floor_pedestal", (1.05, -0.26, 0.50), (0.58, 0.58, 0.90), dark, parent=parent), 0.05, 4)
     cyl("telegraph_round_base_chrome", (1.05, -0.26, 0.98), 0.34, 0.10, metal, 80, parent=parent)
     cyl("telegraph_drum_body", (1.05, -0.26, 1.22), 0.46, 0.42, dark, 96, (math.radians(90), 0, 0), parent)
-    cyl("telegraph_front_glass", (1.05, -0.48, 1.22), 0.43, 0.035, black, 96, (math.radians(90), 0, 0), parent)
+    dial = cyl("telegraph_front_dial_face_textured", (1.05, -0.48, 1.22), 0.43, 0.035, black, 96, (math.radians(90), 0, 0), parent)
+    dial["material_role"] = "generated_telegraph_dial_texture"
     torus("telegraph_chrome_outer_ring", (1.05, -0.50, 1.22), 0.45, 0.018, metal, (math.radians(90), 0, 0), parent)
 
     labels = [
@@ -619,6 +628,8 @@ def add_room_shell(parent):
     wall_mat = bpy.data.materials["mat_bridge_wall"]
     ceiling_mat = bpy.data.materials["mat_ceiling_dark"]
     metal = bpy.data.materials["mat_brushed_metal"]
+    dark = bpy.data.materials["mat_console_dark"]
+    rubber = bpy.data.materials["mat_black_rubber"]
 
     floor = bevel(cube("bridge_floor_collision_visible", (0, -0.65, -0.04), (10.6, 7.8, 0.08), floor_mat, parent=parent), 0.02, 1)
     floor["collision_hint"] = "box"
@@ -628,6 +639,26 @@ def add_room_shell(parent):
     back_wall["runtime_role"] = "static_bridge_shell"
     left_wall = bevel(cube("bridge_left_wall", (-5.28, -0.65, 1.38), (0.12, 7.8, 2.75), wall_mat, parent=parent), 0.02, 1)
     right_wall = bevel(cube("bridge_right_wall", (5.28, -0.65, 1.38), (0.12, 7.8, 2.75), wall_mat, parent=parent), 0.02, 1)
+
+    # Real geometry seams keep the floor/ceiling readable in VR even when
+    # texture mipmaps soften at headset distance.
+    for i, x in enumerate((-4.20, -2.80, -1.40, 0.0, 1.40, 2.80, 4.20)):
+        seam = bevel(cube(f"floor_panel_longitudinal_seam_{i}", (x, -0.65, 0.018), (0.018, 7.15, 0.012), rubber, parent=parent), 0.003, 1)
+        seam["runtime_role"] = "floor_panel_geometry_detail"
+    for i, y in enumerate((-3.35, -2.25, -1.15, -0.05, 1.05, 2.15)):
+        seam = bevel(cube(f"floor_panel_cross_seam_{i}", (0, y, 0.020), (10.15, 0.016, 0.012), rubber, parent=parent), 0.003, 1)
+        seam["runtime_role"] = "floor_panel_geometry_detail"
+    for i, y in enumerate((-2.95, -2.55, -2.15, -1.75, -1.35)):
+        strip = bevel(cube(f"floor_player_antislip_strip_{i}", (0, y, 0.030), (2.20, 0.026, 0.014), dark, parent=parent), 0.004, 1)
+        strip["runtime_role"] = "floor_antislip_contact_detail"
+
+    for i, x in enumerate((-3.9, -1.3, 1.3, 3.9)):
+        beam = bevel(cube(f"ceiling_cross_beam_{i}", (x, -0.35, 2.735), (0.075, 7.25, 0.075), dark, parent=parent), 0.012, 2)
+        beam["runtime_role"] = "ceiling_geometry_detail"
+    for i, y in enumerate((-2.8, -1.3, 0.2, 1.7)):
+        beam = bevel(cube(f"ceiling_longitudinal_beam_{i}", (0, y, 2.728), (10.15, 0.055, 0.060), dark, parent=parent), 0.010, 2)
+        beam["runtime_role"] = "ceiling_geometry_detail"
+
     for i, x in enumerate((-3.8, -1.3, 1.3, 3.8)):
         bevel(cube(f"ceiling_light_panel_{i}", (x, -0.92, 2.74), (1.15, 0.12, 0.035), bpy.data.materials["mat_soft_light"], parent=parent), 0.015, 2)
         cyl(f"ceiling_vent_round_{i}", (x + 0.6, 0.85, 2.735), 0.16, 0.018, metal, 48, parent=parent)
@@ -704,7 +735,7 @@ def create_model(root: Path):
 
     root_empty = empty("modern_bridge_cockpit_root", (0, 0, 0))
     root_empty["model_id"] = "modern_bridge_cockpit"
-    root_empty["version"] = "v1.1"
+    root_empty["version"] = "v1.2"
     root_empty["unit_scale"] = "meters"
     root_empty["runtime_target"] = "Unity 6 VR training scene"
     root_empty["reference_image"] = "reference/imagegen_bridge_cockpit_reference_v1.png"
@@ -795,7 +826,7 @@ def create_model(root: Path):
     readme.write_text(
         """# Modern Bridge Cockpit
 
-Version: v1.1
+Version: v1.2
 Created: 2026-05-10
 Source: Generated procedurally with Codex + Blender Python from project-local ImageGen references.
 
@@ -806,17 +837,22 @@ keeps the cockpit as real procedural geometry and uses generated raster textures
 only where images are appropriate: displays, carpet, ceiling panels, black
 metal console surfaces, and wood cabinets.
 
+v1.2 adds dedicated interaction/structure textures for the ship wheel,
+telegraph lever, telegraph dial, non-slip bridge floor, ceiling panels, window
+pillars, rails, and wipers. It also adds real geometry seams/strips for the
+floor and ceiling so the room reads correctly in VR when texture mipmaps soften.
+
 `13_Modern_Bridge_Depth_Relief` was removed from the active pipeline because it
 looked richer in a still render but did not provide trustworthy VR geometry.
 
 ## Runtime Exports
 
-- `exports/ModernBridgeCockpit_VR_v1.1.fbx`
-- `exports/ModernBridgeCockpit_VR_v1.1.glb`
+- `exports/ModernBridgeCockpit_VR_v1.2.fbx`
+- `exports/ModernBridgeCockpit_VR_v1.2.glb`
 
 ## Source
 
-- `source/ModernBridgeCockpit_VR_v1.1.blend`
+- `source/ModernBridgeCockpit_VR_v1.2.blend`
 - Generator script: `tools/blender_agent/create_modern_bridge_cockpit.py`
 - Concept reference: `reference/imagegen_bridge_cockpit_reference_v1.png`
 
@@ -824,6 +860,8 @@ looked richer in a still render but did not provide trustworthy VR geometry.
 
 - `textures/source/screen_ui_atlas_v1.png`
 - `textures/source/surface_material_atlas_v1.png`
+- `textures/source/interactive_material_atlas_v1.png`
+- `textures/source/structure_material_atlas_v1.png`
 - `textures/screens/screen_radar_v1.png`
 - `textures/screens/screen_ecdis_chart_v1.png`
 - `textures/screens/screen_engine_monitor_v1.png`
@@ -832,6 +870,14 @@ looked richer in a still render but did not provide trustworthy VR geometry.
 - `textures/surfaces/surface_ceiling_panels_v1.png`
 - `textures/surfaces/surface_black_metal_v1.png`
 - `textures/surfaces/surface_warm_wood_v1.png`
+- `textures/interactive/interactive_black_rubber_v1.png`
+- `textures/interactive/interactive_brushed_stainless_v1.png`
+- `textures/interactive/interactive_red_bakelite_v1.png`
+- `textures/interactive/interactive_telegraph_dial_v1.png`
+- `textures/structure/structure_nonslip_floor_v1.png`
+- `textures/structure/structure_ceiling_panels_v1.png`
+- `textures/structure/structure_dark_steel_pillar_v1.png`
+- `textures/structure/structure_brushed_rail_wiper_v1.png`
 
 ## Scale And Orientation
 

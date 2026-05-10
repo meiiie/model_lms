@@ -1,6 +1,6 @@
 # Modern Bridge Cockpit
 
-Version: v1.1
+Version: v1.2
 Created: 2026-05-10
 Source: Generated procedurally with Codex + Blender Python from project-local ImageGen references.
 
@@ -11,17 +11,22 @@ keeps the cockpit as real procedural geometry and uses generated raster textures
 only where images are appropriate: displays, carpet, ceiling panels, black
 metal console surfaces, and wood cabinets.
 
+v1.2 adds dedicated interaction/structure textures for the ship wheel,
+telegraph lever, telegraph dial, non-slip bridge floor, ceiling panels, window
+pillars, rails, and wipers. It also adds real geometry seams/strips for the
+floor and ceiling so the room reads correctly in VR when texture mipmaps soften.
+
 `13_Modern_Bridge_Depth_Relief` was removed from the active pipeline because it
 looked richer in a still render but did not provide trustworthy VR geometry.
 
 ## Runtime Exports
 
-- `exports/ModernBridgeCockpit_VR_v1.1.fbx`
-- `exports/ModernBridgeCockpit_VR_v1.1.glb`
+- `exports/ModernBridgeCockpit_VR_v1.2.fbx`
+- `exports/ModernBridgeCockpit_VR_v1.2.glb`
 
 ## Source
 
-- `source/ModernBridgeCockpit_VR_v1.1.blend`
+- `source/ModernBridgeCockpit_VR_v1.2.blend`
 - Generator script: `tools/blender_agent/create_modern_bridge_cockpit.py`
 - Concept reference: `reference/imagegen_bridge_cockpit_reference_v1.png`
 
@@ -29,6 +34,8 @@ looked richer in a still render but did not provide trustworthy VR geometry.
 
 - `textures/source/screen_ui_atlas_v1.png`
 - `textures/source/surface_material_atlas_v1.png`
+- `textures/source/interactive_material_atlas_v1.png`
+- `textures/source/structure_material_atlas_v1.png`
 - `textures/screens/screen_radar_v1.png`
 - `textures/screens/screen_ecdis_chart_v1.png`
 - `textures/screens/screen_engine_monitor_v1.png`
@@ -37,6 +44,14 @@ looked richer in a still render but did not provide trustworthy VR geometry.
 - `textures/surfaces/surface_ceiling_panels_v1.png`
 - `textures/surfaces/surface_black_metal_v1.png`
 - `textures/surfaces/surface_warm_wood_v1.png`
+- `textures/interactive/interactive_black_rubber_v1.png`
+- `textures/interactive/interactive_brushed_stainless_v1.png`
+- `textures/interactive/interactive_red_bakelite_v1.png`
+- `textures/interactive/interactive_telegraph_dial_v1.png`
+- `textures/structure/structure_nonslip_floor_v1.png`
+- `textures/structure/structure_ceiling_panels_v1.png`
+- `textures/structure/structure_dark_steel_pillar_v1.png`
+- `textures/structure/structure_brushed_rail_wiper_v1.png`
 
 ## Scale And Orientation
 

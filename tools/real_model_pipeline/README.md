@@ -11,7 +11,7 @@ concepts toward production VR assets. The rule is simple:
 
 | Candidate | Folder | What it is good for | Current limitation |
 |---|---|---|---|
-| Procedural cockpit | `12_Modern_Bridge_Cockpit` | Real modular geometry, clear anchors, easy Unity colliders, generated texture atlases for displays and surfaces | Needs more object-specific modeling passes |
+| Procedural cockpit | `12_Modern_Bridge_Cockpit` | Real modular geometry, clear anchors, easy Unity colliders, generated texture atlases for displays, surfaces, interactables, and structure | Needs continued object-specific modeling passes |
 
 Rejected experiment:
 - `13_Modern_Bridge_Depth_Relief` was removed from the active library. It looked
@@ -105,8 +105,9 @@ Use it for:
 
 4. Apply generated images only where they behave like real materials.
    - Display screens can use emissive radar/ECDIS/engine UI textures.
-   - Carpet, ceiling, black metal, and wood can use subtle texture atlases.
+   - Carpet, non-slip floor, ceiling panels, black metal, brushed metal, red handle material, and wood can use subtle texture atlases.
    - Avoid full-room depth projection as a production asset.
+   - For the helm and telegraph, texture the render mesh but keep the wheel, handle, detents, grab anchors, and colliders as real geometry.
 
 5. Prepare VR interaction geometry.
    - Add simple convex colliders per part in Unity.
@@ -145,7 +146,7 @@ The current best next step is not another full-room one-shot generation. It is:
    - `04_Engine_Telegraph`
    - `08_ECDIS`
    - `09_Marine_Radar`
-3. Keep generated screen/surface textures where they improve visual fidelity
+3. Keep generated screen/surface/interaction/structure textures where they improve visual fidelity
    without faking interaction geometry.
 4. In Unity, expose only the real telegraph handle and helm as grabbable
    interactables.
