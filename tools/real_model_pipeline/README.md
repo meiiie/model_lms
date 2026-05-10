@@ -146,9 +146,11 @@ The current best next step is not another full-room one-shot generation. It is:
    - `04_Engine_Telegraph`
    - `08_ECDIS`
    - `09_Marine_Radar`
-3. Keep generated screen/surface/interaction/structure textures where they improve visual fidelity
+3. Keep generated screen textures active where they improve visual fidelity
    without faking interaction geometry.
-4. In Unity, expose only the real telegraph handle and helm as grabbable
+4. Treat generated surface/interaction/structure atlases as reference material
+   until the target meshes are UV-unwrapped or replaced with authored maps.
+5. In Unity, expose only the real telegraph handle and helm as grabbable
    interactables.
 
 This gives the best tradeoff: rich bridge visuals now, correct VR interaction

@@ -7,7 +7,7 @@ from mathutils import Vector
 
 
 MODEL_DIR = "12_Modern_Bridge_Cockpit"
-MODEL_NAME = "ModernBridgeCockpit_VR_v1.2"
+MODEL_NAME = "ModernBridgeCockpit_VR_v1.3"
 
 
 def repo_root_from_args() -> Path:
@@ -112,25 +112,32 @@ def image_mat(name, image_path, fallback_color, metallic=0.0, roughness=0.34, em
 
 def install_texture_materials(texture_dir):
     screen_dir = texture_dir / "screens"
-    surface_dir = texture_dir / "surfaces"
-    interactive_dir = texture_dir / "interactive"
-    structure_dir = texture_dir / "structure"
-
-    set_image_texture("mat_carpet_navy", structure_dir / "structure_nonslip_floor_v1.png", roughness=0.88)
-    set_image_texture("mat_ceiling_dark", structure_dir / "structure_ceiling_panels_v1.png", roughness=0.66, metallic=0.08)
-    set_image_texture("mat_console_dark", surface_dir / "surface_black_metal_v1.png", roughness=0.36, metallic=0.42)
-    set_image_texture("mat_window_frame", structure_dir / "structure_dark_steel_pillar_v1.png", roughness=0.42, metallic=0.55)
-    set_image_texture("mat_brushed_metal", interactive_dir / "interactive_brushed_stainless_v1.png", roughness=0.23, metallic=0.85)
-    set_image_texture("mat_black_rubber", interactive_dir / "interactive_black_rubber_v1.png", roughness=0.90, metallic=0.0)
-    set_image_texture("mat_warm_wood", surface_dir / "surface_warm_wood_v1.png", roughness=0.38)
 
     image_mat("mat_screen_radar", screen_dir / "screen_radar_v1.png", (0.02, 0.20, 0.14, 1), 0.0, 0.16, 1.25)
     image_mat("mat_screen_chart", screen_dir / "screen_ecdis_chart_v1.png", (0.02, 0.28, 0.45, 1), 0.0, 0.18, 1.05)
     image_mat("mat_screen_engine", screen_dir / "screen_engine_monitor_v1.png", (0.02, 0.16, 0.22, 1), 0.0, 0.18, 1.1)
     image_mat("mat_screen_comms", screen_dir / "screen_comms_status_v1.png", (0.02, 0.16, 0.25, 1), 0.0, 0.18, 1.1)
-    image_mat("mat_red_bakelite", interactive_dir / "interactive_red_bakelite_v1.png", (0.78, 0.02, 0.01, 1), 0.0, 0.22, 0.08)
-    image_mat("mat_telegraph_dial_face", interactive_dir / "interactive_telegraph_dial_v1.png", (0.01, 0.012, 0.012, 1), 0.0, 0.20, 0.16)
-    image_mat("mat_marine_rail_metal", structure_dir / "structure_brushed_rail_wiper_v1.png", (0.62, 0.64, 0.62, 1), 0.85, 0.24, 0.0)
+
+    # Keep contact-critical and large structural meshes on stable PBR colors.
+    # They are not UV-unwrapped yet, so image textures visibly drift/stretch.
+    mat("mat_red_bakelite", (0.82, 0.025, 0.018, 1), 0.0, 0.24, (0.45, 0.015, 0.010, 1), 0.06)
+    mat("mat_telegraph_dial_face", (0.006, 0.007, 0.006, 1), 0.05, 0.18, (0.018, 0.024, 0.022, 1), 0.05)
+    mat("mat_marine_rail_metal", (0.62, 0.64, 0.62, 1), 0.85, 0.24)
+    for material_name in (
+        "mat_carpet_navy",
+        "mat_ceiling_dark",
+        "mat_console_dark",
+        "mat_window_frame",
+        "mat_brushed_metal",
+        "mat_black_rubber",
+        "mat_warm_wood",
+        "mat_red_bakelite",
+        "mat_telegraph_dial_face",
+        "mat_marine_rail_metal",
+    ):
+        material = bpy.data.materials.get(material_name)
+        if material:
+            material["texture_strategy"] = "solid_pbr_geometry_detail_until_uv_unwrapped"
 
 
 def empty(name, loc):
@@ -735,11 +742,11 @@ def create_model(root: Path):
 
     root_empty = empty("modern_bridge_cockpit_root", (0, 0, 0))
     root_empty["model_id"] = "modern_bridge_cockpit"
-    root_empty["version"] = "v1.2"
+    root_empty["version"] = "v1.3"
     root_empty["unit_scale"] = "meters"
     root_empty["runtime_target"] = "Unity 6 VR training scene"
     root_empty["reference_image"] = "reference/imagegen_bridge_cockpit_reference_v1.png"
-    root_empty["texture_strategy"] = "procedural geometry plus project-local ImageGen screen and surface atlases"
+    root_empty["texture_strategy"] = "screen textures only; contact and structural meshes use solid PBR plus geometry detail until UV-unwrapped"
     root_empty["interactive_anchors"] = "telegraph, helm, screens"
 
     create_ocean_mesh(root_empty, bpy.data.materials["mat_ocean_teal"])
@@ -826,7 +833,7 @@ def create_model(root: Path):
     readme.write_text(
         """# Modern Bridge Cockpit
 
-Version: v1.2
+Version: v1.3
 Created: 2026-05-10
 Source: Generated procedurally with Codex + Blender Python from project-local ImageGen references.
 
@@ -834,25 +841,27 @@ Source: Generated procedurally with Codex + Blender Python from project-local Im
 
 High-context ship bridge cockpit asset for the VR Maritime LMS. This version
 keeps the cockpit as real procedural geometry and uses generated raster textures
-only where images are appropriate: displays, carpet, ceiling panels, black
-metal console surfaces, and wood cabinets.
+only where images are appropriate and mapping is stable: display screens. The
+room shell, helm, telegraph, floor, ceiling, pillars, rails, and contact parts
+use PBR materials plus real geometry detail.
 
-v1.2 adds dedicated interaction/structure textures for the ship wheel,
-telegraph lever, telegraph dial, non-slip bridge floor, ceiling panels, window
-pillars, rails, and wipers. It also adds real geometry seams/strips for the
-floor and ceiling so the room reads correctly in VR when texture mipmaps soften.
+v1.3 corrects the v1.2 texture-drift issue by removing unwrapped image textures
+from contact-critical and large structural meshes. The ship wheel, telegraph
+lever, telegraph dial, non-slip bridge floor, ceiling panels, window pillars,
+rails, and wipers now use stable PBR materials plus real geometry detail until
+they receive dedicated UV unwraps.
 
 `13_Modern_Bridge_Depth_Relief` was removed from the active pipeline because it
 looked richer in a still render but did not provide trustworthy VR geometry.
 
 ## Runtime Exports
 
-- `exports/ModernBridgeCockpit_VR_v1.2.fbx`
-- `exports/ModernBridgeCockpit_VR_v1.2.glb`
+- `exports/ModernBridgeCockpit_VR_v1.3.fbx`
+- `exports/ModernBridgeCockpit_VR_v1.3.glb`
 
 ## Source
 
-- `source/ModernBridgeCockpit_VR_v1.2.blend`
+- `source/ModernBridgeCockpit_VR_v1.3.blend`
 - Generator script: `tools/blender_agent/create_modern_bridge_cockpit.py`
 - Concept reference: `reference/imagegen_bridge_cockpit_reference_v1.png`
 
@@ -878,6 +887,10 @@ looked richer in a still render but did not provide trustworthy VR geometry.
 - `textures/structure/structure_ceiling_panels_v1.png`
 - `textures/structure/structure_dark_steel_pillar_v1.png`
 - `textures/structure/structure_brushed_rail_wiper_v1.png`
+
+Only the screen textures are actively bound in v1.3. Surface, interaction, and
+structure atlases are retained as art references until the affected meshes are
+UV-unwrapped or replaced with authored material maps.
 
 ## Scale And Orientation
 
