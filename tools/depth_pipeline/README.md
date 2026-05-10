@@ -33,3 +33,7 @@ python tools/depth_pipeline/generate_depth_assets.py `
 For production art, replace `bridge_cockpit_height_2048.png` with a stronger
 depth map from a dedicated depth-estimation tool, then rerun the Blender relief
 generator.
+
+See `../real_model_pipeline/README.md` for the broader production rule: depth
+relief is a visual layer, while lesson-critical controls need real mesh,
+colliders, pivots, and grab poses.
