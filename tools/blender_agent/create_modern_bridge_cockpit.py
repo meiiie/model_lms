@@ -7,7 +7,7 @@ from mathutils import Vector
 
 
 MODEL_DIR = "12_Modern_Bridge_Cockpit"
-MODEL_NAME = "ModernBridgeCockpit_VR_v1.3"
+MODEL_NAME = "ModernBridgeCockpit_VR_v1.4"
 
 
 def repo_root_from_args() -> Path:
@@ -261,6 +261,13 @@ def assign_parent_by_prefix(parent, prefixes):
             obj.parent = parent
 
 
+def parent_keep_world(obj, parent):
+    world = obj.matrix_world.copy()
+    obj.parent = parent
+    obj.matrix_world = world
+    return obj
+
+
 def scale_objects_around(prefixes, center, factor):
     center_vec = Vector(center)
     for obj in bpy.context.scene.objects:
@@ -268,6 +275,32 @@ def scale_objects_around(prefixes, center, factor):
             obj.location = center_vec + (obj.location - center_vec) * factor
             if obj.type != "EMPTY":
                 obj.scale = (obj.scale.x * factor, obj.scale.y * factor, obj.scale.z * factor)
+
+
+def make_rotation_action(obj, name, axis_index, keyframes):
+    action = bpy.data.actions.new(name)
+    action.use_fake_user = True
+    obj.animation_data_create()
+    obj.animation_data.action = action
+    original_rotation = obj.rotation_euler.copy()
+    for frame, degrees in keyframes:
+        obj.rotation_euler[axis_index] = math.radians(degrees)
+        obj.keyframe_insert(data_path="rotation_euler", frame=frame, index=axis_index)
+    obj.rotation_euler = original_rotation
+    return action
+
+
+def attach_action(obj, action, start, end):
+    obj.animation_data_create()
+    obj.animation_data.action = action
+    track = obj.animation_data.nla_tracks.new()
+    track.name = action.name
+    strip = track.strips.new(action.name, int(start), action)
+    strip.name = action.name
+    strip.frame_start = start
+    strip.frame_end = end
+    obj["unity_animation_clip"] = action.name
+    return strip
 
 
 def create_ocean_mesh(parent, ocean_mat):
@@ -520,9 +553,15 @@ def add_windows_and_ship(parent):
         pane = cube(f"front_window_glass_panel_{i}", (x, y + 0.015, 1.86), (1.42, 0.025, 1.24), glass, parent=parent)
         pane["runtime_role"] = "transparent_bridge_window"
         # Wipers.
-        cyl(f"front_window_wiper_pivot_{i}", (x + 0.46, y - 0.045, 2.42), 0.025, 0.025, metal, 24, (math.radians(90), 0, 0), parent)
+        wiper_root = empty(f"front_window_wiper_root_{i}", (x + 0.46, y - 0.045, 2.42))
+        wiper_root.parent = parent
+        wiper_root["runtime_role"] = "animated_wiper_pivot"
+        wiper_root["rotation_axis"] = "local_y"
+        pivot = cyl(f"front_window_wiper_pivot_{i}", (x + 0.46, y - 0.045, 2.42), 0.025, 0.025, metal, 24, (math.radians(90), 0, 0), parent)
         blade = bevel(cube(f"front_window_wiper_arm_{i}", (x + 0.30, y - 0.055, 1.93), (0.035, 0.025, 0.92), metal, (0, 0, math.radians(-9)), parent), 0.005, 1)
         blade["runtime_role"] = "decorative_wiper"
+        parent_keep_world(pivot, wiper_root)
+        parent_keep_world(blade, wiper_root)
 
     # Side frames hint a wrap-around bridge.
     for side, sx in (("left", -5.20), ("right", 5.20)):
@@ -552,6 +591,14 @@ def add_helm(parent):
 
     bevel(cube("helm_pedestal", (-1.10, 0.14, 0.58), (0.48, 0.44, 0.92), dark, parent=parent), 0.035, 3)
     cyl("helm_column", (-1.10, 0.07, 1.05), 0.10, 0.42, metal, 48, (math.radians(77), 0, 0), parent)
+    pivot = empty("helm_wheel_pivot", (-1.10, -0.16, 1.18))
+    pivot.parent = parent
+    pivot["interactive"] = True
+    pivot["vr_action"] = "rotate"
+    pivot["axis"] = "local_y"
+    pivot["rotation_axis"] = "local_y"
+    pivot["rotation_degrees_min"] = -70
+    pivot["rotation_degrees_max"] = 70
     wheel = torus("helm_wheel_outer_ring", (-1.10, -0.14, 1.18), 0.37, 0.022, rubber, (math.radians(90), 0, 0), parent)
     wheel["interactive"] = True
     wheel["vr_action"] = "rotate"
@@ -702,6 +749,83 @@ def add_collision_and_anchors(parent):
         anchor["unity_anchor"] = True
 
 
+def finalize_interaction_hierarchies():
+    helm_pivot = bpy.data.objects.get("helm_wheel_pivot")
+    if helm_pivot:
+        helm_children = ["helm_wheel_outer_ring", "helm_wheel_hub"]
+        helm_children += [f"helm_wheel_spoke_{i}" for i in range(8)]
+        helm_children += [f"helm_wheel_handle_{i}" for i in range(8)]
+        for name in helm_children:
+            obj = bpy.data.objects.get(name)
+            if obj:
+                parent_keep_world(obj, helm_pivot)
+
+    telegraph_pivot = bpy.data.objects.get("telegraph_lever_pivot")
+    if telegraph_pivot:
+        telegraph_pivot["rotation_axis"] = "local_y"
+        telegraph_pivot["rotation_degrees_min"] = -52
+        telegraph_pivot["rotation_degrees_max"] = 52
+        for name in (
+            "telegraph_lever_stem",
+            "telegraph_red_handle_grip",
+            "grab_target_telegraph_handle",
+            "hand_pose_telegraph_right",
+            "hand_pose_telegraph_left",
+        ):
+            obj = bpy.data.objects.get(name)
+            if obj:
+                parent_keep_world(obj, telegraph_pivot)
+
+
+def add_training_animations(parent):
+    bpy.context.scene.frame_start = 1
+    bpy.context.scene.frame_end = 120
+    bpy.context.scene.render.fps = 30
+
+    clips = []
+    helm = bpy.data.objects.get("helm_wheel_pivot")
+    if helm:
+        action = make_rotation_action(
+            helm,
+            "helm_wheel_sweep",
+            1,
+            [(1, 0), (30, 70), (60, 0), (90, -70), (120, 0)],
+        )
+        attach_action(helm, action, 1, 120)
+        helm["unity_driver_hint"] = "Drive local Y rotation from XR grab delta; clip is a demo/hint fallback."
+        clips.append(action.name)
+
+    telegraph = bpy.data.objects.get("telegraph_lever_pivot")
+    if telegraph:
+        action = make_rotation_action(
+            telegraph,
+            "telegraph_lever_order_sweep",
+            1,
+            [(1, 0), (25, -52), (50, 0), (75, 52), (100, 0)],
+        )
+        attach_action(telegraph, action, 1, 100)
+        telegraph["unity_driver_hint"] = "Drive local Y rotation and snap to telegraph detents in gameplay; clip is a demo/hint fallback."
+        telegraph["detents_degrees"] = "FULL_AST=-52;HALF_AST=-30;STOP=0;SLOW_AHD=30;FULL_AHD=52"
+        clips.append(action.name)
+
+    wipers = [bpy.data.objects.get(f"front_window_wiper_root_{i}") for i in range(6)]
+    wipers = [obj for obj in wipers if obj]
+    if wipers:
+        action = make_rotation_action(
+            wipers[0],
+            "front_wipers_idle_sweep",
+            1,
+            [(1, -18), (45, 18), (90, -18)],
+        )
+        for obj in wipers:
+            attach_action(obj, action, 1, 90)
+            obj["unity_driver_hint"] = "Loop this clip only for weather/ambient scenarios."
+        clips.append(action.name)
+
+    parent["available_animation_clips"] = ";".join(clips)
+    parent["animation_policy"] = "Use clips for preview/hints; drive interactables by Unity XR scripts during training."
+
+
 def create_model(root: Path):
     clean_scene()
 
@@ -742,7 +866,7 @@ def create_model(root: Path):
 
     root_empty = empty("modern_bridge_cockpit_root", (0, 0, 0))
     root_empty["model_id"] = "modern_bridge_cockpit"
-    root_empty["version"] = "v1.3"
+    root_empty["version"] = "v1.4"
     root_empty["unit_scale"] = "meters"
     root_empty["runtime_target"] = "Unity 6 VR training scene"
     root_empty["reference_image"] = "reference/imagegen_bridge_cockpit_reference_v1.png"
@@ -762,6 +886,8 @@ def create_model(root: Path):
         (1.05, -0.30, 0.50),
         0.84,
     )
+    finalize_interaction_hierarchies()
+    add_training_animations(root_empty)
     add_collision_and_anchors(root_empty)
 
     # Camera and lighting for the review render.
@@ -812,6 +938,12 @@ def create_model(root: Path):
         add_leaf_bones=False,
         path_mode="COPY",
         embed_textures=True,
+        bake_anim=True,
+        bake_anim_use_nla_strips=True,
+        bake_anim_use_all_actions=True,
+        bake_anim_force_startend_keying=True,
+        bake_anim_step=1.0,
+        bake_anim_simplify_factor=0.0,
         axis_forward="-Z",
         axis_up="Y",
     )
@@ -833,7 +965,7 @@ def create_model(root: Path):
     readme.write_text(
         """# Modern Bridge Cockpit
 
-Version: v1.3
+Version: v1.4
 Created: 2026-05-10
 Source: Generated procedurally with Codex + Blender Python from project-local ImageGen references.
 
@@ -845,23 +977,28 @@ only where images are appropriate and mapping is stable: display screens. The
 room shell, helm, telegraph, floor, ceiling, pillars, rails, and contact parts
 use PBR materials plus real geometry detail.
 
-v1.3 corrects the v1.2 texture-drift issue by removing unwrapped image textures
+v1.3 corrected the v1.2 texture-drift issue by removing unwrapped image textures
 from contact-critical and large structural meshes. The ship wheel, telegraph
 lever, telegraph dial, non-slip bridge floor, ceiling panels, window pillars,
 rails, and wipers now use stable PBR materials plus real geometry detail until
 they receive dedicated UV unwraps.
+
+v1.4 adds Unity-ready training animation clips on proper pivots:
+`helm_wheel_sweep`, `telegraph_lever_order_sweep`, and
+`front_wipers_idle_sweep`. These are preview/hint/fallback clips; gameplay
+should still drive the same pivots with XR or desktop interaction scripts.
 
 `13_Modern_Bridge_Depth_Relief` was removed from the active pipeline because it
 looked richer in a still render but did not provide trustworthy VR geometry.
 
 ## Runtime Exports
 
-- `exports/ModernBridgeCockpit_VR_v1.3.fbx`
-- `exports/ModernBridgeCockpit_VR_v1.3.glb`
+- `exports/ModernBridgeCockpit_VR_v1.4.fbx`
+- `exports/ModernBridgeCockpit_VR_v1.4.glb`
 
 ## Source
 
-- `source/ModernBridgeCockpit_VR_v1.3.blend`
+- `source/ModernBridgeCockpit_VR_v1.4.blend`
 - Generator script: `tools/blender_agent/create_modern_bridge_cockpit.py`
 - Concept reference: `reference/imagegen_bridge_cockpit_reference_v1.png`
 
@@ -888,7 +1025,7 @@ looked richer in a still render but did not provide trustworthy VR geometry.
 - `textures/structure/structure_dark_steel_pillar_v1.png`
 - `textures/structure/structure_brushed_rail_wiper_v1.png`
 
-Only the screen textures are actively bound in v1.3. Surface, interaction, and
+Only the screen textures are actively bound in v1.4. Surface, interaction, and
 structure atlases are retained as art references until the affected meshes are
 UV-unwrapped or replaced with authored material maps.
 
@@ -908,6 +1045,16 @@ UV-unwrapped or replaced with authored material maps.
 - `grab_target_helm_right`
 - `lesson_focus_engine_telegraph`
 - `lesson_focus_helm`
+
+## Animation Clips
+
+- `helm_wheel_sweep`: local-Y wheel rotation, -70 to +70 degrees.
+- `telegraph_lever_order_sweep`: local-Y lever arc through astern, stop, and ahead detents.
+- `front_wipers_idle_sweep`: local-Y window wiper sweep for ambient/weather scenarios.
+
+These clips are intentionally simple and deterministic. Use them for preview,
+lesson hints, or fallback demonstrations; drive interactable pivots from Unity
+scripts during actual learner input.
 
 ## Runtime Notes
 
