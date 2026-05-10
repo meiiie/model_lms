@@ -1,6 +1,8 @@
 # Large/temporary binary artifacts excluded from git.
 # FBX with embedded HDRI textures gets >100 MB; GLB is the canonical Unity import format.
 exports/*.fbx
+# Per-frame animation render output (canonical artifact is the combined MP4)
+research/anim_*_frames/
 # Blender backup files
 *.blend1
 *.blend@
