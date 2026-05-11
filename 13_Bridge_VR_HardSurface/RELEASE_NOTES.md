@@ -1,10 +1,30 @@
-# Cabin Lái Tàu VR — Bridge Cabin Complete v1.1
+# Cabin Lái Tàu VR — Bridge Cabin Complete v1.2
 
-**Codename:** `bridge-cabin-v1.1`
+**Codename:** `bridge-cabin-v1.2`
 **Release date:** 2026-05-11
 **Asset family:** `13_Bridge_VR_HardSurface/`
 
-## What's new in v1.1
+## What's new in v1.2
+
+- **🌥️ Cumulus clouds visible qua cửa sổ** — procedural cloud billboard planes (5 cái) đặt phía trước cabin trong window FOV, mỗi cái có Voronoi+Noise alpha shape tạo cumulus organic
+- **🌊 Aristea Wreck ocean HDRI** — thay puresky bằng HDRI ảnh ocean thật của Poly Haven (CC0). Sky + horizon line tự nhiên hơn
+- **☀️ Sun lamp boosted** energy=4.0 để chiếu sáng clouds rim properly
+- **🎬 4 hero keyframes** ở 1280×720 EEVEE AgX MediumHighContrast (f1, f80, f160, f240)
+- New main file: `source/bridge_v9.0_pro_clouds.blend`
+- New keyframes: `research/anim_v9.0_keyframe_f{001,080,160,240}.png`
+
+### Techniques applied (researched from)
+- [Render Everything - EEVEE/Cycles volumetric clouds](https://www.rendereverything.com/procedural-volumetric-clouds-in-blender-eevee-and-cycles/)
+- [CG Cookie - Creating Clouds with Blender Eevee](https://cgcookie.com/courses/creating-clouds-with-blender-2-8-and-eevee)
+- Voronoi × Noise multiply mask cho cumulus organic shapes
+- Radial falloff cho soft cloud edges
+- Hemisphere mix world shader (HDRI upper / ocean lower)
+
+### Honest gap
+- Volumetric VDB clouds (CloudScapes Free pack) thử ở v10 nhưng render đen do volume opacity conflict — billboard approach v9 đẹp hơn và stable
+- Animation MP4 full 240-frame skipped — 4 keyframes đã đủ cho preview, Unity sẽ animate runtime
+
+## v1.1 (2026-05-11)
 - **🌊 Ocean visible through windows** via Blender Ocean Modifier (real wave geometry + foam) at z=-3.5 m
 - **World shader splits hemispheres**: HDRI puresky for upward camera rays, deep navy ocean blue for downward rays — gives clean horizon line through windows
 - New main file: `source/bridge_v6.0_real_waves.blend`
